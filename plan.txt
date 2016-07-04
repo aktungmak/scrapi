@@ -1,0 +1,21 @@
+this tool is to to records the state of a odata rest api
+the capture can then be used to simulate the state later
+
+scrapi rec https://hostname/rest/v0 -o capture.json
+scrapi play capture.json -p 8080
+
+it does this by following all the links in each endpoint
+the data it finds is stored in a map of url:json strings
+this allows us to quickly check if an endpoint has already
+been seen by using the "v, ok" syntax.
+
+all this data is dumped in a json file, which could be compressed
+
+on playback, the map is regenerated from the json file
+a webserver is started, and it responds to get requests using
+the map of url:json strings.
+
+the fun part comes when trying to make the scraping concurrent
+we use a waitgroup to keep track of how many workers are idle
+when all workers are idle, we can be sure that the scrape is done 
+
