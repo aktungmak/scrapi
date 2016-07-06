@@ -1,10 +1,18 @@
 package scrapi
 
-func Process(url string) ([]string, string, error) {
-	//make http request
-	//parse response for urls
-	print(HTTP_UNAME, HTTP_PASS)
+import (
+    "net/url"
+)
 
-	return urls, body, nil
+func Process(target url.URL, rf ReqFunc) ([]string, string, error) {
+	//make http request
+    body, err := rf(target)
+    if err != nil {
+        return nil, "", err
+    }
+	//parse response for urls
+	
+
+	return urls, string(body), nil
 
 }

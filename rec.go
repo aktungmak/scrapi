@@ -1,4 +1,7 @@
 package scrapi
+import (
+    "sync"
+)
 
 type Result struct {
 	sync.RWMutex

@@ -1,8 +1,12 @@
 package main
 
-const HTTP_UNAME = "gregory" 
+import (
+    "github.com/aktungmak/scrapi"
+    "net/url"
+)
 
 
 func main() {
-Process("goob")
+u, _ := url.Parse("goob")
+scrapi.Process(u)
 }
