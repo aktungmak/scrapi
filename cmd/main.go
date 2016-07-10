@@ -1,5 +1,10 @@
 package main
 
+// todo: add some extra fields to the dump file like
+// datetime of dump, and some notes. these can be
+// displayed on a little start page which links to
+// the serviceroot
+
 import (
 	"github.com/aktungmak/scrapi"
 	"log"
