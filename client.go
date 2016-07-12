@@ -19,6 +19,9 @@ func MakeClient(host, username, password string, insecure bool) ReqFunc {
 		if target.Host == "" {
 			target.Host = host
 		}
+		if target.Scheme == "" {
+			target.Scheme = "https"
+		}
 		req, err := http.NewRequest("GET", target.String(), nil)
 		if err != nil {
 			return nil, err
