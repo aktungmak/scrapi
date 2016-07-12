@@ -16,20 +16,19 @@ func Play(dumpFileName, bindAddr string) error {
 	handler := makeHandler(apiData.State)
 	http.HandleFunc("/", handler)
 	log.Printf("Starting HTTP server listening on %s", bindAddr)
-	http.ListenAndServe(bindAddr, nil)
-	return nil
+	return http.ListenAndServe(bindAddr, nil)
 
 }
 
-func LoadFile(fname string) (map[string]string, error) {
+func LoadFile(fname string) (*Result, error) {
 	f, err := os.Open(fname)
 	if err != nil {
 		return nil, err
 	}
 
 	jsonParser := json.NewDecoder(f)
-	var ret map[string]string
-	err = jsonParser.Decode(&ret)
+	ret := &Result{}
+	err = jsonParser.Decode(ret)
 	return ret, err
 }
 

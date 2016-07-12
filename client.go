@@ -3,8 +3,10 @@ package scrapi
 import (
 	"crypto/tls"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type ReqFunc func(url.URL) ([]byte, error)
@@ -15,7 +17,10 @@ func MakeClient(host, username, password string, insecure bool) ReqFunc {
 		if insecure {
 			tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		}
-		client := &http.Client{Transport: tr}
+		client := &http.Client{
+			Transport: tr,
+			Timeout:   15 * time.Second,
+		}
 		if target.Host == "" {
 			target.Host = host
 		}
@@ -33,6 +38,7 @@ func MakeClient(host, username, password string, insecure bool) ReqFunc {
 			return nil, err
 		}
 		defer res.Body.Close()
+		log.Print(res.Status, target.String())
 
 		return ioutil.ReadAll(res.Body)
 	}

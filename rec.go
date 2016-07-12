@@ -9,49 +9,53 @@ import (
 	"time"
 )
 
-const NUM_WORKERS = 16
+const (
+	NUM_WORKERS = 4
+	QUEUE_SIZE  = 30 + NUM_WORKERS*10
+)
 
 type Result struct {
 	sync.RWMutex
-	State map[url.URL]string
+	State map[string]string
 	Date  time.Time
 	Notes string
 }
 
 func Rec(servRoot *url.URL, fname string, client ReqFunc) error {
-	queue := make(chan *url.URL, NUM_WORKERS*4)
-	done := make(chan struct{})
+	queue := make(chan *url.URL, QUEUE_SIZE)
+	stop := make(chan struct{})
 	pending := &sync.WaitGroup{}
 	result := &Result{
-		State: make(map[url.URL]string),
+		State: make(map[string]string),
 		Date:  time.Now(),
 	}
 
 	pending.Add(1)
 	queue <- servRoot
 
-	for i := 0; i < num_workers; i++ {
-		go Worker(queue, done, pending, client, result)
+	for i := 0; i < NUM_WORKERS; i++ {
+		go Worker(queue, stop, pending, client, result)
 	}
 	pending.Wait()
 
-	for i := 0; i < num_workers; i++ {
-		done <- struct{}{}
+	for i := 0; i < NUM_WORKERS; i++ {
+		stop <- struct{}{}
 	}
 
 	return DumpToFile(result, fname)
 }
 
-func Worker(queue chan *url.URL, done chan struct{}, wg *sync.WaitGroup, client ReqFunc, result *Result) {
+func Worker(queue chan *url.URL, stop chan struct{}, wg *sync.WaitGroup, client ReqFunc, result *Result) {
 	log.Print("starting worker")
 	for {
 		select {
-		case <-done:
+		case <-stop:
 			return
 		case nextUrl := <-queue:
 			body, urls, err := Process(nextUrl, client)
 			if err != nil {
 				log.Print(err)
+				wg.Add(-1)
 				continue
 			}
 			result.Lock()
