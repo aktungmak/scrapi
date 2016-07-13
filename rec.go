@@ -18,6 +18,8 @@ type Result struct {
 	sync.RWMutex
 	State map[string]string
 	Date  time.Time
+	Host  string
+	Root  string
 	Notes string
 }
 
@@ -28,6 +30,8 @@ func Rec(servRoot *url.URL, fname string, client ReqFunc) error {
 	result := &Result{
 		State: make(map[string]string),
 		Date:  time.Now(),
+		Root:  servRoot.Path,
+		Host:  servRoot.Host,
 	}
 
 	pending.Add(1)
