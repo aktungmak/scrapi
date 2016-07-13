@@ -51,6 +51,7 @@ func Rec(servRoot *url.URL, fname string, client ReqFunc) error {
 
 func Worker(queue chan *url.URL, stop chan struct{}, wg *sync.WaitGroup, client ReqFunc, result *Result) {
 	log.Print("starting worker")
+	defer log.Print("worker closing")
 	for {
 		select {
 		case <-stop:

@@ -1,10 +1,5 @@
 package main
 
-// todo: add some extra fields to the dump file like
-// datetime of dump, and some notes. these can be
-// displayed on a little start page which links to
-// the serviceroot
-
 import (
 	"github.com/aktungmak/scrapi"
 	"log"
@@ -18,8 +13,8 @@ func main() {
 		os.Exit(2)
 	}
 	var err error
-	var user = "sysadmin"
-	var pass = "sysadmin123"
+	var user = "localhost\\sysadmin"
+	var pass = "Sysadmin123@"
 	var insecure = true
 	switch os.Args[1] {
 	case "rec":

@@ -12,15 +12,15 @@ import (
 type ReqFunc func(url.URL) ([]byte, error)
 
 func MakeClient(host, username, password string, insecure bool) ReqFunc {
+	tr := &http.Transport{}
+	if insecure {
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   15 * time.Second,
+	}
 	return func(target url.URL) ([]byte, error) {
-		tr := &http.Transport{}
-		if insecure {
-			tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		}
-		client := &http.Client{
-			Transport: tr,
-			Timeout:   15 * time.Second,
-		}
 		if target.Host == "" {
 			target.Host = host
 		}
