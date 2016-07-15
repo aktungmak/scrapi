@@ -1,33 +1,58 @@
 package main
 
 import (
+	"flag"
 	"github.com/aktungmak/scrapi"
 	"log"
 	"net/url"
 	"os"
 )
 
+var mode string   // rec to capture state, play to serve a capture file
+var file string   // location to store the results or play back from
+var target string // the host to record or the host:port to serve on
+var user string   // http Basic Auth username
+var pass string   // http Basic Auth password
+var insecure bool // accept self signed/bad certificates?
+var note string   // some notes to attach to this capture
+var err error
+
+func init() {
+	flag.StringVar(&mode, "m", "rec", "rec to capture state, play to serve a capture file")
+	flag.StringVar(&file, "f", "dump.json", "location to store the results or play back from")
+	flag.StringVar(&target, "t", "", "the service root to record or the host:port to serve on")
+	flag.StringVar(&user, "u", "localhost\\sysadmin", "HTTP basic auth username")
+	flag.StringVar(&pass, "p", "Sysadmin123@", "HTTP basic auth password")
+	flag.BoolVar(&insecure, "k", true, "accept self signed certs")
+	flag.StringVar(&note, "n", "Sysadmin123@", "some notes to attach to this capture")
+}
+
 func main() {
-	if len(os.Args) < 4 {
-		log.Fatal("usage: scrapi <verb> <filename> <target>")
+	flag.Parse()
+	if target == "" {
+		log.Print("the target is required! check -h for help")
 		os.Exit(2)
 	}
-	var err error
-	var user = "localhost\\sysadmin"
-	var pass = "Sysadmin123@"
-	var insecure = true
-	switch os.Args[1] {
+	switch mode {
 	case "rec":
-		u, err := url.Parse(os.Args[3])
+		u, err := url.Parse(target)
 		if err != nil {
 			break
 		}
 		client := scrapi.MakeClient(u.Host, user, pass, insecure)
-		err = scrapi.Rec(u, os.Args[2], client)
+		log.Printf("capturing %s into file %s with credentials %s:%s", target, file, user, pass)
+		if insecure {
+			log.Printf("ignoring any bad certificates")
+		}
+		err = scrapi.Rec(u, file, client, note)
 	case "play":
-		err = scrapi.Play(os.Args[2], os.Args[3])
+		err = scrapi.Play(file, target)
 	default:
-		log.Fatalf("unknown verb '%s'. Try rec or play", os.Args[1])
+		log.Fatalf("unknown mode '%s'. Try rec or play", mode)
 	}
-	log.Printf("err: %v", err)
+	if err != nil {
+		log.Printf("error: %v", err)
+	} else {
+		log.Printf("complete!")
+	}
 }

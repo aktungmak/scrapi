@@ -13,6 +13,11 @@ func Process(target *url.URL, rf ReqFunc) ([]byte, []*url.URL, error) {
 		return nil, nil, err
 	}
 
+	// sometimes the body is empty, so just return here
+	if len(body) == 0 {
+		return nil, nil, nil
+	}
+
 	// parse response as json
 	var jdata map[string]interface{}
 	err = json.Unmarshal(body, &jdata)

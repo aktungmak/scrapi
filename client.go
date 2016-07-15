@@ -38,7 +38,7 @@ func MakeClient(host, username, password string, insecure bool) ReqFunc {
 			return nil, err
 		}
 		defer res.Body.Close()
-		log.Print(res.Status, target.String())
+		log.Printf("%s %s", res.Status, target.String())
 
 		return ioutil.ReadAll(res.Body)
 	}

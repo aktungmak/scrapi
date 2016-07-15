@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	NUM_WORKERS = 4
+	NUM_WORKERS = 8
 	QUEUE_SIZE  = 30 + NUM_WORKERS*10
 )
 
@@ -20,10 +20,10 @@ type Result struct {
 	Date  time.Time
 	Host  string
 	Root  string
-	Notes string
+	Note  string
 }
 
-func Rec(servRoot *url.URL, fname string, client ReqFunc) error {
+func Rec(servRoot *url.URL, fname string, client ReqFunc, note string) error {
 	queue := make(chan *url.URL, QUEUE_SIZE)
 	stop := make(chan struct{})
 	pending := &sync.WaitGroup{}
@@ -32,6 +32,7 @@ func Rec(servRoot *url.URL, fname string, client ReqFunc) error {
 		Date:  time.Now(),
 		Root:  servRoot.Path,
 		Host:  servRoot.Host,
+		Note:  note,
 	}
 
 	pending.Add(1)
@@ -45,13 +46,11 @@ func Rec(servRoot *url.URL, fname string, client ReqFunc) error {
 	for i := 0; i < NUM_WORKERS; i++ {
 		stop <- struct{}{}
 	}
-
+	log.Printf("captured %d endpoints", len(result.State))
 	return DumpToFile(result, fname)
 }
 
 func Worker(queue chan *url.URL, stop chan struct{}, wg *sync.WaitGroup, client ReqFunc, result *Result) {
-	log.Print("starting worker")
-	defer log.Print("worker closing")
 	for {
 		select {
 		case <-stop:
