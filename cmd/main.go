@@ -23,8 +23,8 @@ func init() {
 	flag.StringVar(&target, "t", "", "the service root to record or the host:port to serve on")
 	flag.StringVar(&user, "u", "localhost\\sysadmin", "HTTP basic auth username")
 	flag.StringVar(&pass, "p", "Sysadmin123@", "HTTP basic auth password")
-	flag.BoolVar(&insecure, "k", true, "accept self signed certs")
-	flag.StringVar(&note, "n", "Sysadmin123@", "some notes to attach to this capture")
+	flag.BoolVar(&insecure, "k", true, "accept bad certificates (e.g. self signed)")
+	flag.StringVar(&note, "n", "no notes", "some notes to attach to this capture")
 }
 
 func main() {
