@@ -14,11 +14,9 @@ func Play(dumpFileName, bindAddr string) error {
 	if err != nil {
 		return err
 	}
-	handler := makeHandler(apiData)
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", makeHandler(apiData))
 	log.Printf("Starting HTTP server listening on %s", bindAddr)
 	return http.ListenAndServe(bindAddr, nil)
-
 }
 
 func LoadFile(fname string) (*Result, error) {
@@ -27,9 +25,8 @@ func LoadFile(fname string) (*Result, error) {
 		return nil, err
 	}
 
-	jsonParser := json.NewDecoder(f)
 	ret := &Result{}
-	err = jsonParser.Decode(ret)
+	err = json.NewDecoder(f).Decode(ret)
 	return ret, err
 }
 
@@ -50,9 +47,9 @@ func makeHandler(apiData *Result) func(w http.ResponseWriter, r *http.Request) {
 				D: BUILD_TIME,
 			}
 			err = t.Execute(w, tdata)
-			//fmt.Fprintf(w, DEFAULT_PAGE)
 			return
 		}
+
 		body, ok := apiData.State[r.URL.Path]
 		if !ok {
 			http.NotFound(w, r)

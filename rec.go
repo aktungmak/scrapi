@@ -52,61 +52,49 @@ func Rec(servRoot *url.URL, fname string, client ReqFunc, note string) error {
 		for {
 			select {
 			case <-stop:
-				log.Print("agg stopping")
 				return
 			case u := <-agg_url_input:
-				log.Printf("agg got new url %s", u)
 				_, ok := result.State[u.Path]
-				if !ok {
-					log.Printf("agg sending url %s to workers", u)
+				if !ok { // only queue the URL if it has not been seen
 					worker_input <- u
 				} else {
-					log.Printf("agg ignoring url %s", u)
 					pending.Add(-1)
 				}
 			case ep := <-agg_body_input:
-				log.Printf("agg storing url %s", ep.Url)
 				result.State[ep.Url.Path] = ep.Body
 			}
 		}
-		log.Print("agg fell out of loop")
 	}()
 
 	// workers
 	for i := 0; i < NUM_WORKERS; i++ {
-		go func(id int) {
+		go func() {
 			for {
 				select {
 				case <-stop:
-					log.Printf("worker%d stopping", id)
 					return
 				case u := <-worker_input:
-					log.Printf("worker%d processing url %s", id, u)
 					body, urls, err := Process(u, client)
 					if err != nil {
-						log.Printf("worker%d error processing %s: %s", id, u, err)
+						log.Printf("worker err: %s", err)
 						pending.Add(-1)
 						continue
 					}
 
 					// report result to aggregator
-					log.Printf("worker%d sending body %s to aggregator", id, u)
 					agg_body_input <- endpointData{Url: u, Body: string(body)}
 
 					// send found urls to aggregator
 					for _, u := range urls {
-						log.Printf("worker%d sending new url %s to aggregator", id, u)
 						pending.Add(1)
 						agg_url_input <- u
 					}
 
 					// report we are done
-					log.Printf("worker%d done with %s", id, u)
 					pending.Add(-1)
 				}
 			}
-			log.Printf("worker%d fell out of loop", id)
-		}(i)
+		}()
 	}
 
 	// wait until there are zero pending urls
